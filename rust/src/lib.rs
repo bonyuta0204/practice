@@ -2,6 +2,7 @@ use std::collections::HashSet;
 
 pub mod leetcode {
     pub mod merge_sorted_array;
+    pub mod remove_element;
 }
 
 // https://leetcode.com/problems/optimal-partition-of-string/?envType=study-plan-v2&envId=amazon-spring-23-high-frequency
