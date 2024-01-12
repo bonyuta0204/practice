@@ -1,12 +1,16 @@
 use std::collections::HashSet;
 
+pub mod leetcode {
+    pub mod merge_sorted_array;
+}
+
 // https://leetcode.com/problems/optimal-partition-of-string/?envType=study-plan-v2&envId=amazon-spring-23-high-frequency
 pub fn partition_string(s: String) -> i32 {
     let mut current_set = HashSet::new();
 
     let mut count = 0;
 
-    for char in s.chars() {
+    for char in s.bytes() {
         if current_set.contains(&char) {
             count = count + 1;
             current_set = HashSet::new();
