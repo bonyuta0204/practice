@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 
 pub mod leetcode {
+    pub mod add_two_numbers;
     pub mod merge_sorted_array;
     pub mod remove_element;
 }
