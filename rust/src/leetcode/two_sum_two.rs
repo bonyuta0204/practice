@@ -4,9 +4,18 @@ struct Solution;
 
 impl Solution {
     pub fn two_sum(numbers: Vec<i32>, target: i32) -> Vec<i32> {
+        let largest = numbers[numbers.len() - 1];
+
         for i in 0..(numbers.len() - 1) {
+            let left = numbers[i];
+
+            if left + largest < target {
+                continue;
+            }
+
             for j in (i + 1)..numbers.len() {
-                if numbers[i] + numbers[j] == target {
+                let right = numbers[j];
+                if left + right == target {
                     return vec![i as i32 + 1, j as i32 + 1];
                 }
             }
