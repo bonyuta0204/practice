@@ -4,6 +4,7 @@ pub mod leetcode {
     pub mod add_two_numbers;
     pub mod merge_sorted_array;
     pub mod remove_element;
+    pub mod two_sum_two;
 }
 
 // https://leetcode.com/problems/optimal-partition-of-string/?envType=study-plan-v2&envId=amazon-spring-23-high-frequency
