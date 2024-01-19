@@ -3,7 +3,7 @@ This directory contains Rust projects and coding challenges.
 
 ## Structure
 
-- **async_rust**: Contains examples and practice code for understanding and using Rust's asynchronous programming features.
+- **async_rust**: Contains examples and practice code for understanding and using Rust's asynchronous programming features. based on the [Asynchronous Programming in Rust](https://rust-lang.github.io/async-book/) book.
 - **leetcode**: Holds solutions to various problems from LeetCode.
 
 ## Getting Started with Rust
