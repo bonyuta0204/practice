@@ -1,4 +1,4 @@
 [workspace]
-members = [ "async_rust","leetcode", "my-redis"]
+members = [ "async_rust", "hello","leetcode", "my-redis"]
 resolver = "2"
 
