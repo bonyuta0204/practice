@@ -1,9 +1,7 @@
-use std::{
-    error::Error,
-    time::{Instant},
-};
+use std::{error::Error, time::Instant};
 
-use client::{Client, MultiThreadClient};
+use client::clients::multi_thread_client::MultiThreadClient;
+use client::clients::Client;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let multi_thread_client = MultiThreadClient::new(4);
