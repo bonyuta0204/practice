@@ -34,7 +34,6 @@ fn main() {
 }
 
 fn handle_connection(mut stream: TcpStream) {
-    println!("handling connection");
     let buf_reader = BufReader::new(&mut stream);
 
     let http_request: Vec<_> = buf_reader
@@ -42,8 +41,6 @@ fn handle_connection(mut stream: TcpStream) {
         .filter_map(|result| result.ok())
         .take_while(|line| !line.is_empty())
         .collect();
-
-    println!("received HTTP request: {:?}", http_request);
 
     if let Some(request_line) = http_request.first() {
         let (status_line, file_name) = if request_line == "GET / HTTP/1.1" {
