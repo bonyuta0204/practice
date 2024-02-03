@@ -1,5 +1,5 @@
 use bytes::Bytes;
-use mini_redis::{cmd, Connection, Frame};
+use mini_redis::{Connection, Frame};
 
 use std::{
     collections::HashMap,

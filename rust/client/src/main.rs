@@ -1,9 +1,6 @@
 use std::{
     error::Error,
-    io::{BufRead, BufReader, BufWriter, Write},
-    sync::{Arc, Mutex},
-    thread,
-    time::{Instant, SystemTime},
+    time::{Instant},
 };
 
 use client::{Client, MultiThreadClient};
