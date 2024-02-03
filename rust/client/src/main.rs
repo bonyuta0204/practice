@@ -4,23 +4,30 @@ use client::clients::multi_thread_client::MultiThreadClient;
 use client::clients::Client;
 
 fn main() -> Result<(), Box<dyn Error>> {
+    let mut clients: Vec<Box<dyn Client>> = Vec::new();
     let multi_thread_client = MultiThreadClient::new(4);
 
-    run_benchmark(multi_thread_client);
+    clients.push(Box::new(multi_thread_client));
+
+    run_benchmark(clients, String::from("localhost:7878"), 100);
 
     Ok(())
 }
 
-fn run_benchmark(client: impl Client) {
+fn run_benchmark(clients: Vec<Box<dyn Client>>, host: String, count: usize) {
     let start = Instant::now();
-    println!("starting benchmark for: {}", client.name());
 
-    client.execute(String::from("localhost:7878"), 100);
-    let duration = start.elapsed();
+    for client in clients {
+        println!("starting benchmark for: {}", client.name());
 
-    println!(
-        "Benchmark Result for: {}, result: {:?}",
-        client.name(),
-        duration
-    );
+        let host = host.clone();
+        client.execute(host, count);
+        let duration = start.elapsed();
+
+        println!(
+            "Benchmark Result for: {}, result: {:?}",
+            client.name(),
+            duration
+        );
+    }
 }
