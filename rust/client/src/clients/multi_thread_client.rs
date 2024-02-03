@@ -1,4 +1,5 @@
 use std::{
+    error::Error,
     io::{BufRead, BufReader, BufWriter, Write},
     net::TcpStream,
     sync::{Arc, Mutex},
@@ -21,12 +22,11 @@ impl Client for MultiThreadClient {
     fn name(&self) -> String {
         String::from("MultiThreadClient")
     }
-    fn execute(&self, host: String, count: usize) {
+    fn execute(&self, host: &'static str, count: usize) -> Result<(), Box<dyn Error>> {
         let mut handles = Vec::with_capacity(count);
         let c = Arc::new(Mutex::new(0));
         for _i in 0..self.thread_number {
             let c = Arc::clone(&c);
-            let host = host.clone();
             let handle = thread::spawn(move || {
                 loop {
                     {
@@ -62,7 +62,11 @@ impl Client for MultiThreadClient {
         }
 
         for handle in handles {
-            let _ = handle.join();
+            if let Err(e) = handle.join() {
+                return Err("thread panicked".into());
+            }
         }
+
+        Ok(())
     }
 }

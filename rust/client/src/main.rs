@@ -9,24 +9,34 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     clients.push(Box::new(multi_thread_client));
 
-    run_benchmark(clients, String::from("localhost:7878"), 100);
+    run_benchmark(clients, "localhost:7878", 100);
 
     Ok(())
 }
 
-fn run_benchmark(clients: Vec<Box<dyn Client>>, host: String, count: usize) {
+fn run_benchmark(clients: Vec<Box<dyn Client>>, host: &'static str, count: usize) {
     for client in clients {
         let start = Instant::now();
         println!("starting benchmark for: {}", client.name());
 
-        let host = host.clone();
-        client.execute(host, count);
-        let duration = start.elapsed();
+        match client.execute(host, count) {
+            Ok(_) => {
+                let duration = start.elapsed();
 
-        println!(
-            "Benchmark Result for: {}, result: {:?}",
-            client.name(),
-            duration
-        );
+                println!(
+                    "Benchmark Result for: {}, result: {:?}",
+                    client.name(),
+                    duration
+                );
+            }
+            Err(e) => {
+                let duration = start.elapsed();
+                println!(
+                    "Benchmark Failed for: {}, result: {:?}",
+                    client.name(),
+                    duration
+                );
+            }
+        }
     }
 }
