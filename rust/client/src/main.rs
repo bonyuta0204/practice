@@ -15,9 +15,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 
 fn run_benchmark(clients: Vec<Box<dyn Client>>, host: String, count: usize) {
-    let start = Instant::now();
-
     for client in clients {
+        let start = Instant::now();
         println!("starting benchmark for: {}", client.name());
 
         let host = host.clone();
