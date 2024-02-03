@@ -15,27 +15,24 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 
 fn run_benchmark(clients: Vec<Box<dyn Client>>, host: &'static str, count: usize) {
+    // Print header
+    println!(
+        "{:<20} | {:<10} | {:?}",
+        "Client Name", "Result", "Duration"
+    );
+    println!("{:-<1$}", "", 60); // Print a dividing line
+
     for client in clients {
         let start = Instant::now();
-        println!("starting benchmark for: {}", client.name());
 
         match client.execute(host, count) {
             Ok(_) => {
                 let duration = start.elapsed();
-
-                println!(
-                    "Benchmark Result for: {}, result: {:?}",
-                    client.name(),
-                    duration
-                );
+                println!("{:<20} | {:<10} | {:?}", client.name(), "Success", duration);
             }
             Err(e) => {
                 let duration = start.elapsed();
-                println!(
-                    "Benchmark Failed for: {}, result: {:?}",
-                    client.name(),
-                    duration
-                );
+                println!("{:<20} | {:<10} | {:?}", client.name(), "Failed", duration);
             }
         }
     }
