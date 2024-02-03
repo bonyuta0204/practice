@@ -1,10 +1,10 @@
-use core::time;
+
 use std::{
     error::Error,
-    io::{BufRead, BufReader, BufWriter, Read, Write},
+    io::{BufRead, BufReader, BufWriter, Write},
     sync::{Arc, Mutex},
     thread,
-    time::{Duration, SystemTime},
+    time::{SystemTime},
 };
 
 use std::net::TcpStream;
@@ -21,7 +21,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     println!("started");
 
-    for i in 0..THREAD {
+    for _i in 0..THREAD {
         let count = Arc::clone(&count);
         let handle = thread::spawn(move || {
             loop {
@@ -45,7 +45,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                 // Read the Response
 
-                let response: Vec<_> = reader.lines().filter_map(|line| line.ok()).collect();
+                let _response: Vec<_> = reader.lines().filter_map(|line| line.ok()).collect();
 
                 //                println!("response: {:?}", response);
 
