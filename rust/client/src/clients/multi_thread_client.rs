@@ -1,6 +1,6 @@
 use std::{
     error::Error,
-    io::{BufRead, BufReader, BufWriter, Write},
+    io::{BufReader, BufWriter, Write},
     net::TcpStream,
     sync::{Arc, Mutex},
     thread,
@@ -61,7 +61,7 @@ impl Client for MultiThreadClient {
         }
 
         for handle in handles {
-            if let Err(e) = handle.join() {
+            if let Err(_e) = handle.join() {
                 return Err("thread panicked".into());
             }
         }
