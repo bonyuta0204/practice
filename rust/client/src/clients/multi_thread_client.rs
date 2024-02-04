@@ -2,7 +2,7 @@ use std::{
     error::Error,
     io::{BufReader, BufWriter, Write},
     net::TcpStream,
-    sync::{Arc, Mutex},
+    sync::{mpsc, Arc, Mutex},
     thread,
 };
 
@@ -37,52 +37,59 @@ impl Client for MultiThreadClient {
     fn execute(&self, host: &'static str, count: usize) -> Result<(), Box<dyn Error>> {
         let mut handles = Vec::with_capacity(count);
         let client = Arc::new(Mutex::new(self.clone()));
-        let c = Arc::new(Mutex::new(0));
-        for _i in 0..self.thread_number {
+        let (tx, rx) = mpsc::channel();
+
+        let rx = Arc::new(Mutex::new(rx));
+
+        for i in 0..count {
+            tx.send(i).unwrap();
+        }
+
+        for i in 0..self.thread_number {
             let mut stream: Option<TcpStream> = None;
-            let c = Arc::clone(&c);
             let client = Arc::clone(&client);
-            let handle = thread::spawn(move || {
-                loop {
-                    {
-                        let c = c.lock().unwrap();
-                        // return if already counted to 100
-                        if *c >= count {
-                            break;
+            let rx = Arc::clone(&rx);
+
+            let handle = thread::spawn(move || loop {
+                let c = rx.lock().unwrap().try_recv();
+
+                match c {
+                    Ok(c) => {
+                        //    println!("Thread: {} received request: {}", i, c);
+                    }
+                    Err(_) => {
+                        break;
+                    }
+                }
+
+                if let None = stream {
+                    stream = Some(TcpStream::connect(&host).unwrap());
+                }
+
+                match &stream {
+                    Some(s) => {
+                        let mut writer = BufWriter::new(s);
+                        let mut reader = BufReader::new(s);
+
+                        // Send a GET request
+                        let request = format!("GET / HTTP/1.1\r\nHost: {}\r\n\r\n", host);
+                        writer.write_all(request.as_bytes()).unwrap();
+                        writer.flush().unwrap();
+
+                        let response = Response::from_reader(&mut reader);
+
+                        // response.print();
+
+                        if !client.lock().unwrap().keep_alive {
+                            s.shutdown(std::net::Shutdown::Both).unwrap();
                         }
                     }
-
-                    if let None = stream {
-                        stream = Some(TcpStream::connect(&host).unwrap());
+                    None => {
+                        break;
                     }
-
-                    match &stream {
-                        Some(s) => {
-                            let mut writer = BufWriter::new(s);
-                            let mut reader = BufReader::new(s);
-
-                            // Send a GET request
-                            let request = format!("GET / HTTP/1.1\r\nHost: {}\r\n\r\n", host);
-                            writer.write_all(request.as_bytes()).unwrap();
-                            writer.flush().unwrap();
-
-                            let response = Response::from_reader(&mut reader);
-
-                            // response.print();
-
-                            let mut c = c.lock().unwrap();
-                            *c = *c + 1;
-                            if !client.lock().unwrap().keep_alive {
-                                s.shutdown(std::net::Shutdown::Both).unwrap();
-                            }
-                        }
-                        None => {
-                            break;
-                        }
-                    }
-                    if !client.lock().unwrap().keep_alive {
-                        stream = None;
-                    }
+                }
+                if !client.lock().unwrap().keep_alive {
+                    stream = None;
                 }
             });
 
