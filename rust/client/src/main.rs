@@ -5,11 +5,11 @@ use client::clients::Client;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut clients: Vec<Box<dyn Client>> = Vec::new();
-    let multi_thread_client = MultiThreadClient::new(4);
+    let multi_thread_client = MultiThreadClient::new(1);
 
     clients.push(Box::new(multi_thread_client));
 
-    run_benchmark(clients, "localhost:7878", 1);
+    run_benchmark(clients, "www.google.com:80", 100);
 
     Ok(())
 }

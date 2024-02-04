@@ -50,7 +50,7 @@ impl Client for MultiThreadClient {
 
                     let response = Response::from_reader(&mut reader);
 
-                    println!("response: {:?}", response);
+                    // response.print();
 
                     let mut c = c.lock().unwrap();
                     *c = *c + 1;
