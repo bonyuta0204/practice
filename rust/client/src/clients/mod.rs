@@ -4,5 +4,6 @@ pub mod multi_thread_client;
 
 pub trait Client {
     fn execute(&self, host: &'static str, count: usize) -> Result<(), Box<dyn Error>>;
+    fn option(&self) -> String;
     fn name(&self) -> String;
 }

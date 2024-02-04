@@ -28,6 +28,12 @@ impl Client for MultiThreadClient {
     fn name(&self) -> String {
         String::from("MultiThreadClient")
     }
+    fn option(&self) -> String {
+        format!(
+            "thread_number: {}, keep_alive: {}",
+            self.thread_number, self.keep_alive
+        )
+    }
     fn execute(&self, host: &'static str, count: usize) -> Result<(), Box<dyn Error>> {
         let mut handles = Vec::with_capacity(count);
         let client = Arc::new(Mutex::new(self.clone()));
@@ -66,7 +72,7 @@ impl Client for MultiThreadClient {
 
                             let mut c = c.lock().unwrap();
                             *c = *c + 1;
-                            if (!client.lock().unwrap().keep_alive) {
+                            if !client.lock().unwrap().keep_alive {
                                 s.shutdown(std::net::Shutdown::Both).unwrap();
                             }
                         }
@@ -74,7 +80,7 @@ impl Client for MultiThreadClient {
                             break;
                         }
                     }
-                    if (!client.lock().unwrap().keep_alive) {
+                    if !client.lock().unwrap().keep_alive {
                         stream = None;
                     }
                 }

@@ -19,10 +19,10 @@ fn main() -> Result<(), Box<dyn Error>> {
 fn run_benchmark(clients: Vec<Box<dyn Client>>, host: &'static str, count: usize) {
     // Print header
     println!(
-        "{:<20} | {:<10} | {:?}",
-        "Client Name", "Result", "Duration"
+        "{:<20} | {:<60} | {:<10} | {:?}",
+        "Client Name", "option", "Result", "Duration"
     );
-    println!("{:-<1$}", "", 60); // Print a dividing line
+    println!("{:-<1$}", "", 120); // Print a dividing line
 
     for client in clients {
         let start = Instant::now();
@@ -30,9 +30,15 @@ fn run_benchmark(clients: Vec<Box<dyn Client>>, host: &'static str, count: usize
         match client.execute(host, count) {
             Ok(_) => {
                 let duration = start.elapsed();
-                println!("{:<20} | {:<10} | {:?}", client.name(), "Success", duration);
+                println!(
+                    "{:<20} | {:<60} | {:<10} | {:?}",
+                    client.name(),
+                    client.option(),
+                    "Success",
+                    duration
+                );
             }
-            Err(e) => {
+            Err(_e) => {
                 let duration = start.elapsed();
                 println!("{:<20} | {:<10} | {:?}", client.name(), "Failed", duration);
             }
