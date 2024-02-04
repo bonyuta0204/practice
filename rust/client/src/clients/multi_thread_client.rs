@@ -7,6 +7,7 @@ use std::{
 };
 
 use super::Client;
+use crate::response::Response;
 
 pub struct MultiThreadClient {
     // number of threads for processing
@@ -40,18 +41,16 @@ impl Client for MultiThreadClient {
                     let stream = TcpStream::connect(&host).unwrap();
 
                     let mut writer = BufWriter::new(&stream);
-                    let reader = BufReader::new(&stream);
+                    let mut reader = BufReader::new(&stream);
 
                     // Send a GET request
                     let request = format!("GET / HTTP/1.1\r\nHost: {}\r\n\r\n", host);
                     writer.write_all(request.as_bytes()).unwrap();
                     writer.flush().unwrap();
 
-                    // Read the Response
+                    let response = Response::from_reader(&mut reader);
 
-                    let _response: Vec<_> = reader.lines().filter_map(|line| line.ok()).collect();
-
-                    //                println!("response: {:?}", response);
+                    println!("response: {:?}", response);
 
                     let mut c = c.lock().unwrap();
                     *c = *c + 1;

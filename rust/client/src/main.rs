@@ -9,7 +9,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     clients.push(Box::new(multi_thread_client));
 
-    run_benchmark(clients, "localhost:7878", 100);
+    run_benchmark(clients, "localhost:7878", 1);
 
     Ok(())
 }
