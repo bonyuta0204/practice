@@ -9,13 +9,18 @@ use std::{
 use super::Client;
 use crate::response::Response;
 
+#[derive(Clone)]
 pub struct MultiThreadClient {
     // number of threads for processing
     thread_number: usize,
+    keep_alive: bool,
 }
 impl MultiThreadClient {
-    pub fn new(thread_number: usize) -> Self {
-        Self { thread_number }
+    pub fn new(thread_number: usize, keep_alive: bool) -> Self {
+        Self {
+            thread_number,
+            keep_alive,
+        }
     }
 }
 
@@ -25,9 +30,12 @@ impl Client for MultiThreadClient {
     }
     fn execute(&self, host: &'static str, count: usize) -> Result<(), Box<dyn Error>> {
         let mut handles = Vec::with_capacity(count);
+        let client = Arc::new(Mutex::new(self.clone()));
         let c = Arc::new(Mutex::new(0));
         for _i in 0..self.thread_number {
+            let mut stream: Option<TcpStream> = None;
             let c = Arc::clone(&c);
+            let client = Arc::clone(&client);
             let handle = thread::spawn(move || {
                 loop {
                     {
@@ -38,22 +46,37 @@ impl Client for MultiThreadClient {
                         }
                     }
 
-                    let stream = TcpStream::connect(&host).unwrap();
+                    if let None = stream {
+                        stream = Some(TcpStream::connect(&host).unwrap());
+                    }
 
-                    let mut writer = BufWriter::new(&stream);
-                    let mut reader = BufReader::new(&stream);
+                    match &stream {
+                        Some(s) => {
+                            let mut writer = BufWriter::new(s);
+                            let mut reader = BufReader::new(s);
 
-                    // Send a GET request
-                    let request = format!("GET / HTTP/1.1\r\nHost: {}\r\n\r\n", host);
-                    writer.write_all(request.as_bytes()).unwrap();
-                    writer.flush().unwrap();
+                            // Send a GET request
+                            let request = format!("GET / HTTP/1.1\r\nHost: {}\r\n\r\n", host);
+                            writer.write_all(request.as_bytes()).unwrap();
+                            writer.flush().unwrap();
 
-                    let response = Response::from_reader(&mut reader);
+                            let response = Response::from_reader(&mut reader);
 
-                    // response.print();
+                            // response.print();
 
-                    let mut c = c.lock().unwrap();
-                    *c = *c + 1;
+                            let mut c = c.lock().unwrap();
+                            *c = *c + 1;
+                            if (!client.lock().unwrap().keep_alive) {
+                                s.shutdown(std::net::Shutdown::Both).unwrap();
+                            }
+                        }
+                        None => {
+                            break;
+                        }
+                    }
+                    if (!client.lock().unwrap().keep_alive) {
+                        stream = None;
+                    }
                 }
             });
 
