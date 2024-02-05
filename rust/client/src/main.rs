@@ -1,6 +1,7 @@
 use std::{error::Error, time::Instant};
 
 use client::clients::multi_thread_client::MultiThreadClient;
+use client::clients::pipeline_client::PipeLineClient;
 use client::clients::Client;
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -11,7 +12,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     clients.push(Box::new(MultiThreadClient::new(50, true)));
     clients.push(Box::new(MultiThreadClient::new(100, true)));
 
-    run_benchmark(clients, "abehiroshi.la.coocan.jp:80", 100);
+    clients.push(Box::new(PipeLineClient::new(5)));
+    clients.push(Box::new(PipeLineClient::new(10)));
+    clients.push(Box::new(PipeLineClient::new(50)));
+    clients.push(Box::new(PipeLineClient::new(100)));
+
+    run_benchmark(clients, "abehiroshi.la.coocan.jp:80", 300);
 
     Ok(())
 }
