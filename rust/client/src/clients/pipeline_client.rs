@@ -5,6 +5,8 @@ use std::{
     thread,
 };
 
+use hyper::Uri;
+
 use super::Client;
 use crate::response::Response;
 
@@ -27,6 +29,14 @@ impl Client for PipeLineClient {
         format!("thread_number: {}", self.thread_number)
     }
     fn execute(&self, host: &'static str, count: usize) -> Result<(), Box<dyn Error>> {
+        let uri = host.parse::<Uri>().unwrap();
+        let authority = uri.authority().unwrap();
+        let port = match uri.port() {
+            Some(p) => p.as_str().to_string(),
+            None => "80".to_string(),
+        };
+
+        let addr = format!("{}:{}", authority, port);
         let mut handles = Vec::with_capacity(count);
 
         // Calculate the base number of jobs per thread and the remainder
@@ -42,8 +52,9 @@ impl Client for PipeLineClient {
         }
 
         for job_count in job_counts {
+            let addr = addr.clone();
             let handle = thread::spawn(move || {
-                let stream: TcpStream = TcpStream::connect(&host).unwrap();
+                let stream: TcpStream = TcpStream::connect(&addr).unwrap();
                 let mut writer = BufWriter::new(&stream);
                 let mut reader = BufReader::new(&stream);
 

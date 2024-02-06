@@ -6,6 +6,8 @@ use std::{
     thread,
 };
 
+use hyper::Uri;
+
 use super::Client;
 use crate::response::Response;
 
@@ -35,6 +37,15 @@ impl Client for MultiThreadClient {
         )
     }
     fn execute(&self, host: &'static str, count: usize) -> Result<(), Box<dyn Error>> {
+        let uri = host.parse::<Uri>().unwrap();
+        let authority = uri.authority().unwrap();
+        let port = match uri.port() {
+            Some(p) => p.as_str().to_string(),
+            None => "80".to_string(),
+        };
+
+        let addr = format!("{}:{}", authority, port);
+
         let mut handles = Vec::with_capacity(count);
         let client = Arc::new(Mutex::new(self.clone()));
         let (tx, rx) = mpsc::channel();
@@ -49,6 +60,7 @@ impl Client for MultiThreadClient {
             let mut stream: Option<TcpStream> = None;
             let client = Arc::clone(&client);
             let rx = Arc::clone(&rx);
+            let addr = addr.clone();
 
             let handle = thread::spawn(move || loop {
                 let c = rx.lock().unwrap().try_recv();
@@ -63,7 +75,7 @@ impl Client for MultiThreadClient {
                 }
 
                 if let None = stream {
-                    stream = Some(TcpStream::connect(&host).unwrap());
+                    stream = Some(TcpStream::connect(&addr).unwrap());
                 }
 
                 match &stream {

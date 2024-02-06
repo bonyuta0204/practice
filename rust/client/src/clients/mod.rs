@@ -1,5 +1,6 @@
 use std::error::Error;
 
+pub mod hyper_client;
 pub mod multi_thread_client;
 pub mod pipeline_client;
 
