@@ -18,7 +18,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     clients.push(Box::new(PipeLineClient::new(50)));
     clients.push(Box::new(PipeLineClient::new(100)));
     //    clients.push(Box::new(HyperClient::new()?));
-    run_benchmark(clients, "http://abehiroshi.la.coocan.jp/", 300);
+    run_benchmark(clients, "http://abehiroshi.la.coocan.jp/", 10);
     Ok(())
 }
 

@@ -8,6 +8,8 @@ use std::{
 
 use hyper::Uri;
 
+use crate::request::Request;
+
 use super::Client;
 use crate::response::Response;
 
@@ -61,6 +63,7 @@ impl Client for MultiThreadClient {
             let client = Arc::clone(&client);
             let rx = Arc::clone(&rx);
             let addr = addr.clone();
+            let host = uri.host().unwrap().to_string().clone();
 
             let handle = thread::spawn(move || loop {
                 let c = rx.lock().unwrap().try_recv();
@@ -84,13 +87,13 @@ impl Client for MultiThreadClient {
                         let mut reader = BufReader::new(s);
 
                         // Send a GET request
-                        let request = format!("GET / HTTP/1.1\r\nHost: {}\r\n\r\n", host);
-                        writer.write_all(request.as_bytes()).unwrap();
+                        let request = Request::get(&host, "/");
+                        writer.write_all(request.as_bytes().as_slice()).unwrap();
                         writer.flush().unwrap();
 
                         let response = Response::from_reader(&mut reader);
 
-                        // response.print();
+                        response.print();
 
                         if !client.lock().unwrap().keep_alive {
                             s.shutdown(std::net::Shutdown::Both).unwrap();
