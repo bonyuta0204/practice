@@ -6,3 +6,4 @@ rust/target
 
 ptrace/build
 ptrace/bin
+mtrace/bin
