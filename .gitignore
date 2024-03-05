@@ -1,1 +1,7 @@
 rust/target
+
+# Debug information
+*.dSYM/
+*.dSYM/**
+
+ptrace/build
