@@ -5,3 +5,4 @@ rust/target
 *.dSYM/**
 
 ptrace/build
+ptrace/bin
