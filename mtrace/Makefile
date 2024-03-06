@@ -12,6 +12,9 @@ $(BIN_DIR)/$(TARGET): $(SOURCE)
 	@mkdir -p $(BIN_DIR)
 	$(CC) $(CFLAGS) -o $@ $^
 
+%.s: %.c
+	$(CC) -masm=intel -S -o $@ $^
+
 clean:
-	rm -rf $(BIN_DIR)
+	rm -rf $(BIN_DIR) *.s
 
