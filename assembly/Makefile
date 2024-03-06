@@ -1,6 +1,9 @@
 # Compiler and linker definitions
 NASM := nasm
 LD := ld
+CC := gcc
+
+CFLAGS := -O0 -g
 
 # Directories
 SRC_DIR := .
@@ -11,15 +14,18 @@ SOURCES := $(wildcard $(SRC_DIR)/*.s)
 # Derive object files from sources
 OBJS := $(SOURCES:.s=.o)
 # Derive target executables from sources
-TARGETS := $(patsubst $(SRC_DIR)/%.s,$(BIN_DIR)/%,$(SOURCES))
+TARGETS := hello sum
 
 # Default target: build all executables
 .PHONY: all
-all: $(TARGETS)
+all: $(BIN_DIR)/hello $(BIN_DIR)/sum
 
 # Rule to build executables: depends on object files
-$(BIN_DIR)/%: $(SRC_DIR)/%.o | $(BIN_DIR)
+$(BIN_DIR)/hello: hello.o | $(BIN_DIR)
 	$(LD) -o $@ $<
+
+$(BIN_DIR)/sum: asm_func.o sum.c | $(BIN_DIR)
+	$(CC) -o $@ sum.c asm_func.o
 
 # Rule to compile assembly to object files
 $(SRC_DIR)/%.o: $(SRC_DIR)/%.s
@@ -29,7 +35,11 @@ $(SRC_DIR)/%.o: $(SRC_DIR)/%.s
 $(BIN_DIR):
 	mkdir -p $@
 
+
+
 # Clean up build artifacts
 .PHONY: clean
 clean:
 	rm -rf $(BIN_DIR) $(OBJS)
+
+

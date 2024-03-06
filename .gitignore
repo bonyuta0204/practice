@@ -4,6 +4,9 @@ rust/target
 *.dSYM/
 *.dSYM/**
 
+*.o
+
 ptrace/build
 ptrace/bin
 mtrace/bin
+assembly/bin
