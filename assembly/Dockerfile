@@ -8,5 +8,6 @@ WORKDIR /workspace
 COPY . .
 
 # Install build dependencies for C and Assembly
-RUN apk update && apk add build-base
+RUN apk update && apk add build-base bash nasm git neovim vim gdb
 
+CMD ["/bin/bash"]
