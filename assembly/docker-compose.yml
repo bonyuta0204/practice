@@ -4,7 +4,6 @@ services:
     build: .
     volumes:
       - .:/workspace
-    tty: true
     platform: linux/amd64
-    attach: true
+    command: tail -f /dev/null
 

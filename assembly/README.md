@@ -8,6 +8,6 @@ If you use different platform or architecture, use docker image for developing a
 You can use Docker image as following
 
 ```sh
-docker compose build
-docker compose run dev
+docker compose up -d
+docker compose exec dev
 ```
