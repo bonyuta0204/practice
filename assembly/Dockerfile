@@ -8,7 +8,7 @@ WORKDIR /workspace
 COPY . .
 
 # Install build dependencies for C and Assembly
-RUN apk update && apk add build-base bash nasm git neovim vim gdb curl fzf npm starship
+RUN apk update && apk add build-base bash nasm git neovim vim gdb curl fzf npm starship fish
 
 RUN git clone https://github.com/bonyuta0204/dotfiles.git ~/dotfiles
 

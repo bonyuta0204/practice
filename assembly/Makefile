@@ -18,7 +18,7 @@ TARGETS := hello sum
 
 # Default target: build all executables
 .PHONY: all
-all: $(BIN_DIR)/hello $(BIN_DIR)/sum
+all: $(BIN_DIR)/hello $(BIN_DIR)/sum $(BIN_DIR)/total
 
 # Rule to build executables: depends on object files
 $(BIN_DIR)/hello: hello.o | $(BIN_DIR)
@@ -26,6 +26,9 @@ $(BIN_DIR)/hello: hello.o | $(BIN_DIR)
 
 $(BIN_DIR)/sum: asm_func.o sum.c | $(BIN_DIR)
 	$(CC) -o $@ sum.c asm_func.o
+
+$(BIN_DIR)/total: asm_func.o total.c | $(BIN_DIR)
+	$(CC) -o $@ total.c asm_func.o
 
 # Rule to compile assembly to object files
 $(SRC_DIR)/%.o: $(SRC_DIR)/%.s
