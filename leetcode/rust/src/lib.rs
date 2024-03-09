@@ -1,5 +1,3 @@
-
-
 pub mod leetcode {
     pub mod add_two_numbers;
     pub mod merge_sorted_array;
