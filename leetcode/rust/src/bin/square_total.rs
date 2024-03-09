@@ -1,19 +1,25 @@
 fn main() {
     // print outs how long it takes to run the function
+    benchmark_brute_force(100);
+    benchmark_brute_force(300);
+    benchmark_brute_force(500);
+}
 
+fn benchmark_brute_force(n: u32) {
     let start = std::time::Instant::now();
 
-    let result = square_total(100);
+    square_total_brute_force(n);
 
-    println!("Time: {:?}", start.elapsed());
-
-    for pair in result {
-        pair.pretty_print();
-    }
+    // print in milliseconds
+    println!(
+        "Time for {}: {} millie seconds",
+        n,
+        start.elapsed().as_millis()
+    );
 }
 
 // list of pairs a^3 + b^3 = c^3 + d^3 where each is below than passed number n
-fn square_total(n: u32) -> Vec<Pair> {
+fn square_total_brute_force(n: u32) -> Vec<Pair> {
     let mut results: Vec<Pair> = Vec::new();
 
     // n >= a >= b >= 0 AND n >= c >= d >= 0
