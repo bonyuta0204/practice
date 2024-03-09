@@ -5,3 +5,5 @@ pub mod leetcode {
     pub mod remove_element;
     pub mod two_sum_two;
 }
+
+pub mod data_structures;
