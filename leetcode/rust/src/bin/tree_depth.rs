@@ -3,15 +3,19 @@ use std::{cell::RefCell, rc::Rc};
 use leetcode::data_structures::TreeNode;
 
 fn main() {
-    let node1 = TreeNode::new(3);
-    let node2 = TreeNode::new(5);
-    let node3 = TreeNode {
-        val: 1,
-        left: Some(Rc::new(RefCell::new(node1))),
-        right: Some(Rc::new(RefCell::new(node2))),
-    };
+    let node = TreeNode::from_vec(vec![
+        Some(3),
+        Some(9),
+        Some(20),
+        None,
+        None,
+        Some(15),
+        Some(7),
+    ]);
 
-    let result = Solution::max_depth(Some(Rc::new(RefCell::new(node3))));
+    println!("node: {:#?}", node);
+
+    let result = Solution::max_depth(node);
 
     println!("result: {}", result);
 }
