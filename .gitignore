@@ -1,4 +1,6 @@
 rust/target
+leetcode/rust/Cargo.lock
+leetcode/rust/target/
 
 # Debug information
 *.dSYM/
