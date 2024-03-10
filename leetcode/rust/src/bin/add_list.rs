@@ -77,14 +77,6 @@ impl Node {
         }
     }
 
-    fn to_int(&self) -> u32 {
-        self.value
-            + match &self.next {
-                Some(node) => node.to_int() * 10,
-                None => 0,
-            }
-    }
-
     fn to_str(&self) -> String {
         format!(
             "{}{}",

@@ -1,4 +1,4 @@
-use std::{collections::HashMap, result};
+use std::collections::HashMap;
 
 // list of pairs a^3 + b^3 = c^3 + d^3 where each is below than passed number n
 // a, b, c, d >= 0
@@ -27,6 +27,7 @@ fn run_solution(solution: impl Solution, n: u32) -> Vec<Pair> {
 }
 
 #[derive(Debug)]
+#[allow(dead_code)]
 struct Pair {
     a: u32,
     b: u32,
@@ -36,6 +37,7 @@ struct Pair {
 }
 
 impl Pair {
+    #[allow(dead_code)]
     fn pretty_print(&self) {
         println!(
             "{:3}^3 + {:3}^3 = {:3}^3 + {:3}^3 = {}",
@@ -110,7 +112,7 @@ impl Solution for TableLookup {
 
         for key in sum_map.keys() {
             let pairs = sum_map.get(key).unwrap();
-            if (pairs.len() > 1) {
+            if pairs.len() > 1 {
                 for i in 0..pairs.len() {
                     for j in 0..pairs.len() {
                         if i == j {

@@ -1,4 +1,4 @@
-struct Solution;
+pub struct Solution;
 
 impl Solution {
     pub fn min_sub_array_len(target: i32, nums: Vec<i32>) -> i32 {
@@ -21,16 +21,15 @@ impl Solution {
             }
         }
 
-        return 0;
+        0
     }
 
     fn max_sum_for_length(nums: &Vec<i32>, length: usize) -> i32 {
-        let mut max_sum = 0;
         let mut sum = 0;
         for i in 0..length {
             sum += nums[i];
         }
-        max_sum = sum;
+        let mut max_sum = sum;
 
         for i in 0..(nums.len() - length) {
             sum -= nums[i];
@@ -40,7 +39,7 @@ impl Solution {
             }
         }
 
-        return max_sum;
+        max_sum
     }
 }
 

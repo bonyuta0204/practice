@@ -1,18 +1,6 @@
-// Definition for singly-linked list.
-#[derive(PartialEq, Eq, Clone, Debug)]
-pub struct ListNode {
-    pub val: i32,
-    pub next: Option<Box<ListNode>>,
-}
-//
-impl ListNode {
-    #[inline]
-    fn new(val: i32) -> Self {
-        ListNode { next: None, val }
-    }
-}
+use crate::data_structures::list::ListNode;
 
-struct Solution;
+pub struct Solution;
 
 impl Solution {
     pub fn add_two_numbers(
@@ -40,23 +28,23 @@ impl Solution {
                 // only node1 exists
                 let sum = node1.val + carry;
                 let carry = sum / 10;
-                return Some(Box::new(ListNode {
+                Some(Box::new(ListNode {
                     val: sum % 10,
                     next: Solution::add_two_numbers_helper(node1.next, None, carry),
-                }));
+                }))
             }
         } else if let Some(node2) = l2 {
             let sum = node2.val + carry;
             let carry = sum / 10;
-            return Some(Box::new(ListNode {
+            Some(Box::new(ListNode {
                 val: sum % 10,
                 next: Solution::add_two_numbers_helper(None, node2.next, carry),
-            }));
+            }))
         } else {
             if carry == 0 {
-                return None;
+                None
             } else {
-                return Some(Box::new(ListNode::new(carry)));
+                Some(Box::new(ListNode::new(carry)))
             }
         }
     }
