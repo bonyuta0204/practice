@@ -1,7 +1,7 @@
 use std::error::Error;
 
 use clap::{Parser, Subcommand};
-use espanol::builder;
+use espanol::{builder, lookup};
 
 #[derive(Parser, Debug)]
 #[command(name = "Espanol")]
@@ -39,11 +39,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             Ok(())
         }
         Commands::Lookup { word, path } => {
-            let dict_path = path.unwrap_or_else(|| "~/.espanol/dictionary.db".to_string());
-            println!(
-                "Looking up word: '{}' in dictionary at: {}",
-                word, dict_path
-            );
+            lookup::run(word, path)?;
             Ok(())
         }
     }

@@ -1,9 +1,9 @@
 use std::{
-    fs::{self, File},
-    io::{BufReader, BufWriter, Error, ErrorKind, Read, Write}, path::Path,
+    fs::File,
+    io::{BufReader, Error, ErrorKind, Read},
+    path::Path,
 };
 
-use serde::{Deserialize, Serialize};
 
 use quick_xml::events::Event;
 use quick_xml::Reader;
@@ -13,45 +13,23 @@ use tar::Archive;
 use tempfile::tempdir;
 use xz2::bufread::XzDecoder;
 
+use crate::dict::Dict;
+
 const SOURCE_URL: &str =
     "https://download.freedict.org/dictionaries/spa-eng/0.3.1/freedict-spa-eng-0.3.1.src.tar.xz";
 
-#[derive(Debug, Serialize, Deserialize)]
-struct DictEntry {
-    word: String,
-    translation: String,
-}
-
 pub fn run(path: Option<String>) -> Result<(), Error> {
-
     let path = match path {
         Some(path) => Path::new(&path).to_path_buf(),
-        None => {
-        dirs::home_dir()
-            .unwrap()
-            .join(".espanol/directory.db")
-        }
+        None => dirs::home_dir().unwrap().join(".espanol/directory.db"),
     };
-
-    println!("{:#?}", path);
-
 
     let dict_data = fetch_spanish_dict()?;
     let dictionary = parse_dict_data(dict_data);
 
     match dictionary {
         Ok(dictionary) => {
-            let encoded = bincode::serialize(&dictionary).unwrap();
-
-            // We have to make sure that the directory is created
-            let path = std::path::Path::new(&path);
-            let dir = path.parent().unwrap();
-            fs::create_dir_all(dir)?;
-
-            let db_file = File::create(&path)?;
-            let mut buf_writer = BufWriter::new(db_file);
-
-            buf_writer.write_all(&encoded)?;
+            dictionary.save_to_file(&path)?;
         }
         Err(_) => return Err(Error::new(ErrorKind::Other, "failed to parse XML")),
     }
@@ -96,13 +74,8 @@ fn fetch_spanish_dict() -> Result<String, Error> {
     }
 }
 
-fn parse_dict_data(row_data: String) -> Result<Vec<DictEntry>, quick_xml::Error> {
-    let mut dictionary = Vec::new();
-
-    let entry = DictEntry {
-        word: String::from("hoge"),
-        translation: String::from("fuga"),
-    };
+fn parse_dict_data(row_data: String) -> Result<Dict, quick_xml::Error> {
+    let mut dictonary = Dict::new();
 
     let buf_reader = BufReader::new(row_data.as_bytes());
     let mut reader = Reader::from_reader(buf_reader);
@@ -133,11 +106,7 @@ fn parse_dict_data(row_data: String) -> Result<Vec<DictEntry>, quick_xml::Error>
                 b"entry" => {
                     if let Some(ref word) = next_word {
                         if let Some(ref translation) = next_translation {
-                            let entry = DictEntry {
-                                word: word.to_string(),
-                                translation: translation.to_string(),
-                            };
-                            dictionary.push(entry);
+                            dictonary.add_entry(word.to_string(), translation.to_string())
                         }
                     }
                 }
@@ -158,7 +127,5 @@ fn parse_dict_data(row_data: String) -> Result<Vec<DictEntry>, quick_xml::Error>
         }
     }
 
-    dictionary.push(entry);
-
-    Ok(dictionary)
+    Ok(dictonary)
 }
