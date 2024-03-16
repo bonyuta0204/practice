@@ -3,6 +3,10 @@ use std::{
     io::{BufReader, Error, ErrorKind, Read},
 };
 
+use quick_xml::events::Event;
+use quick_xml::Reader;
+use std::str::from_utf8;
+
 use reqwest::blocking::get;
 use tar::Archive;
 use tempfile::tempdir;
@@ -11,18 +15,56 @@ use xz2::bufread::XzDecoder;
 const SOURCE_URL: &str =
     "https://download.freedict.org/dictionaries/spa-eng/0.3.1/freedict-spa-eng-0.3.1.src.tar.xz";
 
+#[derive(Debug)]
+struct DictEntry {
+    word: String,
+    translation: String,
+}
+
+#[derive(Debug)]
+struct DictEntryBuf {
+    word: Option<String>,
+    translation: Option<String>,
+}
+
+//impl DictEntryBuf {
+//    fn reset(&mut self) {
+//        self.word = None;
+//        self.translation = None;
+//    }
+//
+//    fn to_dict_entry(&self) -> Option<DictEntry> {
+//        self.word.is_some_and(|word| {
+//            self.translation.is_some_and(|translation| {
+//                Some(DictEntry {
+//                    word: word,
+//                    translation: translation,
+//                })
+//            })
+//        })
+//    }
+//}
+
 pub fn run(path: Option<String>) -> Result<(), Error> {
     let path = path.unwrap_or_else(|| "~/.espanol/dictionary.db".to_string());
-    println!("Creating dictionary for {}", path);
+    let dict_data = fetch_spanish_dict()?;
+    let dictionary = parse_dict_data(dict_data);
 
+    println!("created dictionary");
+    for entry in dictionary {
+        println!("{:#?}", entry);
+    }
+
+    Ok(())
+}
+
+fn fetch_spanish_dict() -> Result<String, Error> {
     // Download the dictionary source to a temporary directory
     let temp_dir = tempdir()?;
     let file_path = temp_dir.path().join("dictionary.tar.xz");
     let mut output = File::create(&file_path)?;
     let mut response = get(SOURCE_URL).expect("Failed to get response");
     let bytes = std::io::copy(&mut response, &mut output)?;
-
-    println!("Read {} bytes from response", bytes);
 
     // Unpack the dictionary source
     let tar_xz = File::open(&file_path).expect("Failed to open file");
@@ -40,16 +82,82 @@ pub fn run(path: Option<String>) -> Result<(), Error> {
     match target_entry {
         Some(mut entry) => {
             let mut row_data = String::new();
-
             entry.read_to_string(&mut row_data)?;
 
-            println!("bytes: {}", row_data.len());
-
-            Ok(())
+            Ok(row_data)
         }
         None => Err(Error::new(
             ErrorKind::NotFound,
             "Could not find target entry",
         )),
     }
+}
+
+fn parse_dict_data(row_data: String) -> Result<Vec<DictEntry>, quick_xml::Error> {
+    let mut dictionary = Vec::new();
+
+    let entry = DictEntry {
+        word: String::from("hoge"),
+        translation: String::from("fuga"),
+    };
+
+    let buf_reader = BufReader::new(row_data.as_bytes());
+    let mut reader = Reader::from_reader(buf_reader);
+
+    let mut buf = Vec::new();
+    let mut inside_orth = false;
+    let mut inside_quote = false;
+
+    let mut next_word: Option<String> = None;
+    let mut next_translation: Option<String> = None;
+
+    let mut current_entry = reader.trim_text(true);
+
+    // Iterate through XML elements
+    loop {
+        buf.clear();
+        match reader.read_event_into(&mut buf) {
+            Ok(Event::Start(ref e)) => match e.local_name().as_ref() {
+                b"orth" => inside_orth = true,
+                b"quote" => inside_quote = true,
+                b"entry" => {
+                    next_word = None;
+                    next_translation = None;
+                }
+                _ => (),
+            },
+            Ok(Event::End(ref e)) => match e.local_name().as_ref() {
+                b"orth" => inside_orth = false,
+                b"quote" => inside_quote = false,
+                b"entry" => {
+                    if let Some(ref word) = next_word {
+                        if let Some(ref translation) = next_translation {
+                            let entry = DictEntry {
+                                word: word.to_string(),
+                                translation: translation.to_string(),
+                            };
+                            dictionary.push(entry);
+                        }
+                    }
+                }
+                _ => (),
+            },
+            Ok(Event::Text(e)) => {
+                if inside_orth {
+                    let word = e.unescape()?;
+                    next_word = Some(word.to_string());
+                } else if inside_quote {
+                    let translation = e.unescape()?;
+                    next_translation = Some(translation.to_string());
+                }
+            }
+            Ok(Event::Eof) => break,
+            Err(e) => return Err(e),
+            _ => (),
+        }
+    }
+
+    dictionary.push(entry);
+
+    Ok(dictionary)
 }

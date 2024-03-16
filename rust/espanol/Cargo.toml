@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "4.5.3", features = ["derive"] }
+quick-xml = "0.31.0"
 reqwest = { version = "0.11.26", features = ["blocking", "json"] }
 tar = "0.4.40"
 tempfile = "3.10.1"
