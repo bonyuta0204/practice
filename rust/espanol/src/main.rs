@@ -1,3 +1,5 @@
+use std::error::Error;
+
 use clap::{Parser, Subcommand};
 use espanol::builder;
 
@@ -28,18 +30,21 @@ enum Commands {
     },
 }
 
-fn main() {
+fn main() -> Result<(), Box<dyn Error>> {
     let args = Cli::parse();
 
     match args.command {
-        Commands::Build { path } => builder::run(path),
+        Commands::Build { path } => {
+            builder::run(path)?;
+            Ok(())
+        }
         Commands::Lookup { word, path } => {
             let dict_path = path.unwrap_or_else(|| "~/.espanol/dictionary.db".to_string());
             println!(
                 "Looking up word: '{}' in dictionary at: {}",
                 word, dict_path
             );
-            // Implement the lookup word logic here
+            Ok(())
         }
     }
 }
