@@ -1,7 +1,9 @@
 use std::{
-    fs::File,
-    io::{BufReader, Error, ErrorKind, Read},
+    fs::{self, File},
+    io::{BufReader, BufWriter, Error, ErrorKind, Read, Write}, path::Path,
 };
+
+use serde::{Deserialize, Serialize};
 
 use quick_xml::events::Event;
 use quick_xml::Reader;
@@ -14,21 +16,47 @@ use xz2::bufread::XzDecoder;
 const SOURCE_URL: &str =
     "https://download.freedict.org/dictionaries/spa-eng/0.3.1/freedict-spa-eng-0.3.1.src.tar.xz";
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 struct DictEntry {
     word: String,
     translation: String,
 }
 
 pub fn run(path: Option<String>) -> Result<(), Error> {
-    let path = path.unwrap_or_else(|| "~/.espanol/dictionary.db".to_string());
+
+    let path = match path {
+        Some(path) => Path::new(&path).to_path_buf(),
+        None => {
+        dirs::home_dir()
+            .unwrap()
+            .join(".espanol/directory.db")
+        }
+    };
+
+    println!("{:#?}", path);
+
+
     let dict_data = fetch_spanish_dict()?;
     let dictionary = parse_dict_data(dict_data);
 
-    println!("created dictionary");
-    for entry in dictionary {
-        println!("{:#?}", entry);
+    match dictionary {
+        Ok(dictionary) => {
+            let encoded = bincode::serialize(&dictionary).unwrap();
+
+            // We have to make sure that the directory is created
+            let path = std::path::Path::new(&path);
+            let dir = path.parent().unwrap();
+            fs::create_dir_all(dir)?;
+
+            let db_file = File::create(&path)?;
+            let mut buf_writer = BufWriter::new(db_file);
+
+            buf_writer.write_all(&encoded)?;
+        }
+        Err(_) => return Err(Error::new(ErrorKind::Other, "failed to parse XML")),
     }
+
+    println!("created dictionary");
 
     Ok(())
 }
@@ -39,7 +67,7 @@ fn fetch_spanish_dict() -> Result<String, Error> {
     let file_path = temp_dir.path().join("dictionary.tar.xz");
     let mut output = File::create(&file_path)?;
     let mut response = get(SOURCE_URL).expect("Failed to get response");
-    let bytes = std::io::copy(&mut response, &mut output)?;
+    std::io::copy(&mut response, &mut output)?;
 
     // Unpack the dictionary source
     let tar_xz = File::open(&file_path).expect("Failed to open file");
