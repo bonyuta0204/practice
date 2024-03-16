@@ -5,7 +5,6 @@ use std::{
 
 use quick_xml::events::Event;
 use quick_xml::Reader;
-use std::str::from_utf8;
 
 use reqwest::blocking::get;
 use tar::Archive;
@@ -20,30 +19,6 @@ struct DictEntry {
     word: String,
     translation: String,
 }
-
-#[derive(Debug)]
-struct DictEntryBuf {
-    word: Option<String>,
-    translation: Option<String>,
-}
-
-//impl DictEntryBuf {
-//    fn reset(&mut self) {
-//        self.word = None;
-//        self.translation = None;
-//    }
-//
-//    fn to_dict_entry(&self) -> Option<DictEntry> {
-//        self.word.is_some_and(|word| {
-//            self.translation.is_some_and(|translation| {
-//                Some(DictEntry {
-//                    word: word,
-//                    translation: translation,
-//                })
-//            })
-//        })
-//    }
-//}
 
 pub fn run(path: Option<String>) -> Result<(), Error> {
     let path = path.unwrap_or_else(|| "~/.espanol/dictionary.db".to_string());
@@ -110,8 +85,6 @@ fn parse_dict_data(row_data: String) -> Result<Vec<DictEntry>, quick_xml::Error>
 
     let mut next_word: Option<String> = None;
     let mut next_translation: Option<String> = None;
-
-    let mut current_entry = reader.trim_text(true);
 
     // Iterate through XML elements
     loop {
