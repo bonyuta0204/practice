@@ -1,6 +1,6 @@
 use std::{
     fs::File,
-    io::{self, BufReader},
+    io::{BufReader, Error, ErrorKind, Read},
 };
 
 use reqwest::blocking::get;
@@ -11,7 +11,7 @@ use xz2::bufread::XzDecoder;
 const SOURCE_URL: &str =
     "https://download.freedict.org/dictionaries/spa-eng/0.3.1/freedict-spa-eng-0.3.1.src.tar.xz";
 
-pub fn run(path: Option<String>) -> Result<(), io::Error> {
+pub fn run(path: Option<String>) -> Result<(), Error> {
     let path = path.unwrap_or_else(|| "~/.espanol/dictionary.db".to_string());
     println!("Creating dictionary for {}", path);
 
@@ -20,16 +20,36 @@ pub fn run(path: Option<String>) -> Result<(), io::Error> {
     let file_path = temp_dir.path().join("dictionary.tar.xz");
     let mut output = File::create(&file_path)?;
     let mut response = get(SOURCE_URL).expect("Failed to get response");
-    std::io::copy(&mut response, &mut output)?;
+    let bytes = std::io::copy(&mut response, &mut output)?;
+
+    println!("Read {} bytes from response", bytes);
 
     // Unpack the dictionary source
     let tar_xz = File::open(&file_path).expect("Failed to open file");
     let tar = XzDecoder::new(BufReader::new(tar_xz));
     let mut archive = Archive::new(tar);
-    archive.unpack(&path).expect("Failed to unpack tar file");
 
-    println!("created db to {}", path);
+    let mut entries = archive.entries()?.filter_map(|entry| entry.ok());
 
+    let target_entry = entries.find(|entry| {
+        entry
+            .path()
+            .is_ok_and(|p| p.to_str().is_some_and(|s| s.contains("spa-eng.tei")))
+    });
 
-    Ok(())
+    match target_entry {
+        Some(mut entry) => {
+            let mut row_data = String::new();
+
+            entry.read_to_string(&mut row_data)?;
+
+            println!("bytes: {}", row_data.len());
+
+            Ok(())
+        }
+        None => Err(Error::new(
+            ErrorKind::NotFound,
+            "Could not find target entry",
+        )),
+    }
 }
