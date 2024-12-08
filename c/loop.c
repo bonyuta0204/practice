@@ -10,6 +10,8 @@ struct timespec current_real_time;
 struct timespec start_cpu_time;
 struct timespec current_cpu_time;
 
+long i = 0;
+
 long elapsed_nsec(struct timespec *t1, struct timespec *t2) {
     // Convert seconds to nanoseconds and add the nanoseconds part
     long nsec1 = t1->tv_sec * 1000000000L + t1->tv_nsec;
@@ -26,7 +28,7 @@ void signal_handler(int signum) {
     long real_elapsed = elapsed_nsec(&start_real_time, &current_real_time) / 1000;
     long cpu_elapsed = elapsed_nsec(&start_cpu_time, &current_cpu_time) / 1000;
 
-    printf("Timer called %10ld real usec!  %10ld CPU usec \n", real_elapsed, cpu_elapsed);
+    printf("Timer called. Value: %10ld  %10ld real usec!  %10ld CPU usec \n", i ,real_elapsed, cpu_elapsed);
     fflush(stdout);
 }
 
@@ -54,7 +56,6 @@ int main() {
 
     setitimer(ITIMER_REAL, &timer, NULL);
 
-    int i = 0;
     /* Wait for signals */
     while (1) {
         i++;
