@@ -3,8 +3,19 @@ CFLAGS = -Wall -Wextra
 DEBUG_FLAGS = -g -DDEBUG
 BIN_DIR = bin
 
+# Detect operating system
+OS := $(shell uname -s)
+
 # List of source files
-SRCS = $(wildcard *.c)
+SRCS = $(filter-out container.c, $(wildcard *.c))
+
+
+# Exclude container.c if not Linux
+ifeq ($(OS), Linux)
+    SRCS += container.c
+endif
+
+
 # Generate binary names by replacing .c with nothing and prefixing with bin/
 BINS = $(SRCS:%.c=$(BIN_DIR)/%)
 
