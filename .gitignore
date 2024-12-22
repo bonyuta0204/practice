@@ -12,4 +12,6 @@ leetcode/rust/target/
 ptrace/build
 ptrace/bin
 mtrace/bin
+c/bin
 assembly/bin
+tags
