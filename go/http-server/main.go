@@ -1,28 +1,48 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
-	"net/http"
+	"net"
 )
 
-// Handler function for the root endpoint
-func homeHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Hello, World! Welcome to my Go HTTP server.")
-}
-
 func main() {
-	// Register the handler
-	http.HandleFunc("/", homeHandler)
 
 	// Define the port
-	port := "8080"
+	port := ":8080"
+	ln, err := net.Listen("tcp", port)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	fmt.Println("Starting server on port " + port)
 
-	// Start the server
-	err := http.ListenAndServe(":"+port, nil)
-	if err != nil {
-		log.Fatal("Server failed to start:", err)
+	for {
+		conn, err := ln.Accept()
+		if err != nil {
+			log.Fatal(err)
+		}
+		go handleConnection(conn)
 	}
+
 }
 
+func handleConnection(conn net.Conn) {
+	defer conn.Close()
+
+	scanner := bufio.NewScanner(conn)
+
+	response := make([]byte, 1024)
+
+	for scanner.Scan() {
+		content := scanner.Bytes()
+		response = append(response, content...)
+		fmt.Println(string(content))
+
+	}
+
+  fmt.Println("response" ,string(response))
+	conn.Write(response)
+
+}
