@@ -33,4 +33,8 @@ func TestParserParse(t *testing.T) {
 	if !reflect.DeepEqual(response.Headers, expectedHeaders) {
 		t.Errorf("Expected headers %v, got %v", expectedHeaders, response.Headers)
 	}
+
+	if string(response.Body) != "Hello, World!" {
+		t.Errorf("Expected body \"Hello, World!\", got %s", string(response.Body))
+	}
 }

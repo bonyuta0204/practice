@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"io"
+	"strconv"
 
 	"github.com/bonyuta0204/practice/go/http-server/pkg/http"
 )
@@ -40,9 +41,22 @@ func (p *Parser) Parse() (http.HttpResponse, error) {
 		return http.HttpResponse{}, err
 	}
 
+	contentLength, err := strconv.Atoi(headers["Content-Length"])
+	if err != nil {
+		return http.HttpResponse{}, err
+	}
+
+	buf := make([]byte, int(contentLength))
+
+	_, err = p.reader.Read(buf)
+	if err != nil {
+		return http.HttpResponse{}, err
+	}
+
 	return http.HttpResponse{
 		StatusCode: statusCode,
 		Headers:    headers,
+		Body:       buf,
 	}, nil
 }
 
