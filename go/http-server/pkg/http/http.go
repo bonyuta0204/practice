@@ -1,7 +1,8 @@
 package http
 
-type HttpResponse struct {
-	StatusCode int
-	Headers    map[string]string
-	Body       []byte
+type HttpRequest struct {
+	Method  string
+	Path    string
+	Headers map[string]string
+	Body    []byte
 }

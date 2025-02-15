@@ -1,10 +1,11 @@
 package server
 
 import (
-	"bufio"
 	"fmt"
 	"log"
 	"net"
+
+	"github.com/bonyuta0204/practice/go/http-server/pkg/request_parser"
 )
 
 // Server represents the TCP server
@@ -41,22 +42,17 @@ func (s *Server) Start() error {
 func (s *Server) handleConnection(conn net.Conn) {
 	defer conn.Close()
 
-	scanner := bufio.NewScanner(conn)
-	response := make([]byte, 0, 1024)
+	p := request_parser.New(conn)
+	response, err := p.Parse()
 
-	for scanner.Scan() {
-		content := scanner.Bytes()
-		response = append(response, content...)
-		fmt.Println("Received:", string(content))
-	}
-
-	if err := scanner.Err(); err != nil {
-		log.Printf("Error reading from connection: %v\n", err)
+	if err != nil {
+		log.Printf("Error parsing response: %v\n", err)
+		conn.Write([]byte("broken"))
 		return
 	}
 
-	fmt.Println("Sending response:", string(response))
-	if _, err := conn.Write(response); err != nil {
-		log.Printf("Error writing response: %v\n", err)
-	}
+	log.Printf("Parsed response: %v\n", response)
+
+	conn.Write([]byte("OK"))
+
 }
