@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 
+	"github.com/bonyuta0204/practice/go/http-server/pkg/http"
 	"github.com/bonyuta0204/practice/go/http-server/pkg/request_parser"
 )
 
@@ -40,19 +41,22 @@ func (s *Server) Start() error {
 }
 
 func (s *Server) handleConnection(conn net.Conn) {
-	defer conn.Close()
+  defer conn.Close()
 
 	p := request_parser.New(conn)
-	response, err := p.Parse()
+	request, err := p.Parse()
 
 	if err != nil {
-		log.Printf("Error parsing response: %v\n", err)
+		log.Printf("Error parsing request: %v\n", err)
 		conn.Write([]byte("broken"))
 		return
 	}
 
-	log.Printf("Parsed response: %v\n", response)
+	log.Printf("Received a request. %v", request)
 
-	conn.Write([]byte("OK"))
+	response := http.NewResponse(200, make(map[string]string))
+	response.SetTextBody("Hello World!")
+
+	conn.Write(response.ToByte())
 
 }
