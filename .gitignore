@@ -15,3 +15,5 @@ mtrace/bin
 c/bin
 assembly/bin
 tags
+
+go/http-server/bin
