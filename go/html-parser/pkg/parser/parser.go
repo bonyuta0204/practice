@@ -25,7 +25,7 @@ func New(reader io.Reader) *Parser {
 
 func (p *Parser) Parse() (*Node, error) {
 
-	return p.parseElement()
+	return p.parseNode()
 }
 
 func (p *Parser) parseElement() (*Node, error) {
@@ -68,13 +68,13 @@ func (p *Parser) parseNode() (*Node, error) {
 	t, err := p.reader.Peek(1)
 
 	if err == io.EOF {
-		return nil, nil
+		return nil, fmt.Errorf("Expected HTML tag but not found")
 	} else if err != nil {
 		return nil, err
 	}
 
 	if rune(t[0]) != '<' {
-		return nil, nil
+		return nil, fmt.Errorf("Expected HTML tag but not found")
 	}
 
 	tag, err := p.consumeOpenTag()

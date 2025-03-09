@@ -7,7 +7,7 @@ import (
 
 func TestParse(t *testing.T) {
 	t.Run("simple div", func(t *testing.T) {
-		html := strings.NewReader("<div>")
+		html := strings.NewReader("<div>a</div>")
 		parser := New(html)
 		result, err := parser.Parse()
 		if err != nil {
@@ -177,15 +177,9 @@ func TestEdgeCases(t *testing.T) {
 	t.Run("text only", func(t *testing.T) {
 		element := strings.NewReader("Just text, no HTML")
 		parser := New(element)
-		result, err := parser.Parse()
-		if err != nil {
-			t.Fatalf("Error happened: %v", err)
-		}
-		if result.tag != "text" {
-			t.Errorf("Expected text node but got %s", result.tag)
-		}
-		if result.content != "Just text, no HTML" {
-			t.Errorf("Content incorrect: %s", result.content)
+		_, err := parser.Parse()
+		if err == nil {
+			t.Fatalf("Expected parse error but no error happened: %v", err)
 		}
 	})
 
@@ -207,4 +201,3 @@ func TestEdgeCases(t *testing.T) {
 		}
 	})
 }
-
