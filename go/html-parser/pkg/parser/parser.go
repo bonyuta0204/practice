@@ -23,7 +23,7 @@ func New(reader io.Reader) *Parser {
 	}
 }
 
-func (p *Parser) parse() (*Node, error) {
+func (p *Parser) Parse() (*Node, error) {
 
 	return p.parseElement()
 }

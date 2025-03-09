@@ -11,7 +11,7 @@ func TestParse(t *testing.T) {
 
 	parser := New(html)
 
-	result, err := parser.parse()
+	result, err := parser.Parse()
 
 	if err != nil {
 		t.Fatalf("Error %s", err)
