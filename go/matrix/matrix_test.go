@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 )
@@ -214,48 +215,146 @@ func TestMatrixDataBuilder_validateSecondRow(t *testing.T) {
 	}
 }
 
-func TestMatrixDataBuilder_parseRow(t *testing.T) {
+func TestMatrixDataBuilder_BuildParallel(t *testing.T) {
 	tests := []struct {
-		name           string
-		row            []string
-		expectedHeader string
-		expectedData   []string
-		expectError    bool
+		name         string
+		rawData      [][]string
+		headerParts  []string
+		expected     *MatrixData
+		expectNil    bool
 	}{
 		{
-			name:           "valid row",
-			row:            []string{"Header", "1", "2", "3"},
-			expectedHeader: "Header",
-			expectedData:   []string{"1", "2", "3"},
+			name: "valid data with 2 header parts",
+			rawData: [][]string{
+				{"", "Header1", "", "Header2", ""},
+				{"", "Part1", "Part2", "Part1", "Part2"},
+				{"Row1", "1", "2", "3", "4"},
+				{"Row2", "5", "6", "7", "8"},
+			},
+			headerParts: []string{"Part1", "Part2"},
+			expected: &MatrixData{
+				columnHeaders:    []string{"Header1", "Header2"},
+				columnSubHeaders: []string{"Part1", "Part2"},
+				rowHeaders:       []string{"Row1", "Row2"},
+				values: [][][]string{
+					{{"1", "2"}, {"3", "4"}},
+					{{"5", "6"}, {"7", "8"}},
+				},
+			},
 		},
 		{
-			name:           "row with single data element",
-			row:            []string{"H", "data"},
-			expectedHeader: "H",
-			expectedData:   []string{"data"},
-		},
-		{
-			name:        "empty row",
-			row:         []string{},
-			expectError: true,
-		},
-		{
-			name:        "single element row",
-			row:         []string{"OnlyHeader"},
-			expectError: true,
-		},
-		{
-			name:           "row with empty data",
-			row:            []string{"Header", "", "", ""},
-			expectedHeader: "Header",
-			expectedData:   []string{"", "", ""},
+			name: "large data set",
+			rawData: func() [][]string {
+				data := [][]string{
+					{"", "H1", "", "H2", "", "H3", ""},
+					{"", "P1", "P2", "P1", "P2", "P1", "P2"},
+				}
+				for i := 0; i < 100; i++ {
+					row := []string{fmt.Sprintf("Row%d", i)}
+					for j := 0; j < 6; j++ {
+						row = append(row, fmt.Sprintf("%d-%d", i, j))
+					}
+					data = append(data, row)
+				}
+				return data
+			}(),
+			headerParts: []string{"P1", "P2"},
+			expectNil:   false,
 		},
 	}
 
 	builder := &MatrixDataBuilder{}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			header, data, err := builder.parseRow(tt.row)
+			result := builder.BuildParallel(tt.rawData, tt.headerParts)
+			if tt.expectNil {
+				if result != nil {
+					t.Errorf("expected nil result, got %v", result)
+				}
+			} else {
+				if result == nil {
+					t.Fatal("expected non-nil result, got nil")
+				}
+				// For large data set, just check basic properties
+				if tt.name == "large data set" {
+					if len(result.rowHeaders) != 100 {
+						t.Errorf("expected 100 row headers, got %d", len(result.rowHeaders))
+					}
+					if len(result.values) != 100 {
+						t.Errorf("expected 100 value rows, got %d", len(result.values))
+					}
+				} else if tt.expected != nil {
+					if !reflect.DeepEqual(result, tt.expected) {
+						t.Errorf("result mismatch\ngot:  %+v\nwant: %+v", result, tt.expected)
+					}
+				}
+			}
+		})
+	}
+}
+
+func TestMatrixDataBuilder_parseRow(t *testing.T) {
+	tests := []struct {
+		name           string
+		row            []string
+		partSize       int
+		expectedHeader string
+		expectedData   [][]string
+		expectError    bool
+	}{
+		{
+			name:           "valid row with partSize 2",
+			row:            []string{"Header", "1", "2", "3", "4"},
+			partSize:       2,
+			expectedHeader: "Header",
+			expectedData:   [][]string{{"1", "2"}, {"3", "4"}},
+		},
+		{
+			name:           "valid row with partSize 3",
+			row:            []string{"H", "a", "b", "c", "d", "e", "f"},
+			partSize:       3,
+			expectedHeader: "H",
+			expectedData:   [][]string{{"a", "b", "c"}, {"d", "e", "f"}},
+		},
+		{
+			name:           "row with uneven parts",
+			row:            []string{"Header", "1", "2", "3"},
+			partSize:       2,
+			expectedHeader: "Header",
+			expectedData:   [][]string{{"1", "2"}, {"3"}},
+		},
+		{
+			name:           "row with single data element",
+			row:            []string{"H", "data"},
+			partSize:       1,
+			expectedHeader: "H",
+			expectedData:   [][]string{{"data"}},
+		},
+		{
+			name:        "empty row",
+			row:         []string{},
+			partSize:    2,
+			expectError: true,
+		},
+		{
+			name:        "single element row",
+			row:         []string{"OnlyHeader"},
+			partSize:    2,
+			expectError: true,
+		},
+		{
+			name:           "row with empty data",
+			row:            []string{"Header", "", "", ""},
+			partSize:       2,
+			expectedHeader: "Header",
+			expectedData:   [][]string{{"", ""}, {""}},
+		},
+	}
+
+	builder := &MatrixDataBuilder{}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			header, data, err := builder.parseRow(tt.row, tt.partSize)
 			if tt.expectError {
 				if err == nil {
 					t.Error("expected error, got nil")

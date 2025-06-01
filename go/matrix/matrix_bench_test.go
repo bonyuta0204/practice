@@ -123,3 +123,86 @@ func BenchmarkMatrixDataBuilder_Memory(b *testing.B) {
 		}
 	}
 }
+
+// Parallel benchmarks
+func BenchmarkMatrixDataBuilder_Parallel_Small(b *testing.B) {
+	rawData := generateMatrixData(10, 10, 2)
+	headerParts := []string{"Part1", "Part2"}
+	builder := &MatrixDataBuilder{}
+	
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		result := builder.BuildParallel(rawData, headerParts)
+		if result == nil {
+			b.Fatal("BuildParallel returned nil")
+		}
+	}
+}
+
+func BenchmarkMatrixDataBuilder_Parallel_Medium(b *testing.B) {
+	rawData := generateMatrixData(100, 100, 3)
+	headerParts := []string{"Part1", "Part2", "Part3"}
+	builder := &MatrixDataBuilder{}
+	
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		result := builder.BuildParallel(rawData, headerParts)
+		if result == nil {
+			b.Fatal("BuildParallel returned nil")
+		}
+	}
+}
+
+func BenchmarkMatrixDataBuilder_Parallel_Large(b *testing.B) {
+	rawData := generateMatrixData(1000, 1000, 2)
+	headerParts := []string{"Part1", "Part2"}
+	builder := &MatrixDataBuilder{}
+	
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		result := builder.BuildParallel(rawData, headerParts)
+		if result == nil {
+			b.Fatal("BuildParallel returned nil")
+		}
+	}
+}
+
+// Comparison benchmark
+func BenchmarkComparison(b *testing.B) {
+	sizes := []struct {
+		name string
+		rows int
+		cols int
+	}{
+		{"Small-10x10", 10, 10},
+		{"Medium-100x100", 100, 100},
+		{"Large-1000x1000", 1000, 1000},
+		{"ExtraLarge-5000x5000", 5000, 5000},
+	}
+	
+	for _, size := range sizes {
+		rawData := generateMatrixData(size.rows, size.cols, 3)
+		headerParts := []string{"Part1", "Part2", "Part3"}
+		builder := &MatrixDataBuilder{}
+		
+		b.Run(size.name+"-Sequential", func(b *testing.B) {
+			b.ResetTimer()
+			for i := 0; i < b.N; i++ {
+				result := builder.Build(rawData, headerParts)
+				if result == nil {
+					b.Fatal("Build returned nil")
+				}
+			}
+		})
+		
+		b.Run(size.name+"-Parallel", func(b *testing.B) {
+			b.ResetTimer()
+			for i := 0; i < b.N; i++ {
+				result := builder.BuildParallel(rawData, headerParts)
+				if result == nil {
+					b.Fatal("BuildParallel returned nil")
+				}
+			}
+		})
+	}
+}
