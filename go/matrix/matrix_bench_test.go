@@ -7,7 +7,7 @@ import (
 
 func generateMatrixData(rows, cols int, partsPerCol int) [][]string {
 	data := make([][]string, rows+2)
-	
+
 	// First row: column headers
 	data[0] = make([]string, cols*partsPerCol+1)
 	data[0][0] = ""
@@ -17,7 +17,7 @@ func generateMatrixData(rows, cols int, partsPerCol int) [][]string {
 			data[0][i*partsPerCol+j+1] = ""
 		}
 	}
-	
+
 	// Second row: sub-headers
 	data[1] = make([]string, cols*partsPerCol+1)
 	data[1][0] = ""
@@ -26,7 +26,7 @@ func generateMatrixData(rows, cols int, partsPerCol int) [][]string {
 			data[1][i*partsPerCol+j+1] = fmt.Sprintf("Part%d", j+1)
 		}
 	}
-	
+
 	// Data rows
 	for i := 0; i < rows; i++ {
 		data[i+2] = make([]string, cols*partsPerCol+1)
@@ -35,7 +35,7 @@ func generateMatrixData(rows, cols int, partsPerCol int) [][]string {
 			data[i+2][j+1] = fmt.Sprintf("v%d,%d", i, j)
 		}
 	}
-	
+
 	return data
 }
 
@@ -44,7 +44,7 @@ func BenchmarkMatrixDataBuilder_Small(b *testing.B) {
 	rawData := generateMatrixData(10, 10, 2)
 	headerParts := []string{"Part1", "Part2"}
 	builder := &MatrixDataBuilder{}
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		result := builder.Build(rawData, headerParts)
@@ -59,7 +59,7 @@ func BenchmarkMatrixDataBuilder_Medium(b *testing.B) {
 	rawData := generateMatrixData(100, 100, 3)
 	headerParts := []string{"Part1", "Part2", "Part3"}
 	builder := &MatrixDataBuilder{}
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		result := builder.Build(rawData, headerParts)
@@ -74,7 +74,7 @@ func BenchmarkMatrixDataBuilder_Large(b *testing.B) {
 	rawData := generateMatrixData(1000, 1000, 2)
 	headerParts := []string{"Part1", "Part2"}
 	builder := &MatrixDataBuilder{}
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		result := builder.Build(rawData, headerParts)
@@ -93,10 +93,10 @@ func BenchmarkMatrixDataBuilder_VaryingParts(b *testing.B) {
 			for i := 0; i < partCount; i++ {
 				headerParts[i] = fmt.Sprintf("Part%d", i+1)
 			}
-			
+
 			rawData := generateMatrixData(50, 50, partCount)
 			builder := &MatrixDataBuilder{}
-			
+
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
 				result := builder.Build(rawData, headerParts)
@@ -113,7 +113,7 @@ func BenchmarkMatrixDataBuilder_Memory(b *testing.B) {
 	rawData := generateMatrixData(100, 100, 3)
 	headerParts := []string{"Part1", "Part2", "Part3"}
 	builder := &MatrixDataBuilder{}
-	
+
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -129,7 +129,7 @@ func BenchmarkMatrixDataBuilder_Parallel_Small(b *testing.B) {
 	rawData := generateMatrixData(10, 10, 2)
 	headerParts := []string{"Part1", "Part2"}
 	builder := &MatrixDataBuilder{}
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		result := builder.BuildParallel(rawData, headerParts)
@@ -143,7 +143,7 @@ func BenchmarkMatrixDataBuilder_Parallel_Medium(b *testing.B) {
 	rawData := generateMatrixData(100, 100, 3)
 	headerParts := []string{"Part1", "Part2", "Part3"}
 	builder := &MatrixDataBuilder{}
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		result := builder.BuildParallel(rawData, headerParts)
@@ -157,7 +157,7 @@ func BenchmarkMatrixDataBuilder_Parallel_Large(b *testing.B) {
 	rawData := generateMatrixData(1000, 1000, 2)
 	headerParts := []string{"Part1", "Part2"}
 	builder := &MatrixDataBuilder{}
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		result := builder.BuildParallel(rawData, headerParts)
@@ -179,12 +179,12 @@ func BenchmarkComparison(b *testing.B) {
 		{"Large-1000x1000", 1000, 1000},
 		{"ExtraLarge-5000x5000", 5000, 5000},
 	}
-	
+
 	for _, size := range sizes {
 		rawData := generateMatrixData(size.rows, size.cols, 3)
 		headerParts := []string{"Part1", "Part2", "Part3"}
 		builder := &MatrixDataBuilder{}
-		
+
 		b.Run(size.name+"-Sequential", func(b *testing.B) {
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
@@ -194,7 +194,7 @@ func BenchmarkComparison(b *testing.B) {
 				}
 			}
 		})
-		
+
 		b.Run(size.name+"-Parallel", func(b *testing.B) {
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {

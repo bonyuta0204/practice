@@ -40,7 +40,7 @@ func (b *MatrixDataBuilder) Build(rawData [][]string, headerParts []string) *Mat
 	numRows := len(rawData) - 2
 	result.rowHeaders = make([]string, 0, numRows)
 	result.values = make([][][]string, 0, numRows)
-	
+
 	for i := 2; i < len(rawData); i++ {
 		headerCol, rowWithParts, err := b.parseRow(rawData[i], partSize)
 		if err != nil {
@@ -84,10 +84,10 @@ func (b *MatrixDataBuilder) parseRow(row []string, partSize int) (string, [][]st
 	if len(row) < 2 {
 		return "", nil, fmt.Errorf("invalid row")
 	}
-	
+
 	header := row[0]
 	data := row[1:]
-	
+
 	// Split data into parts
 	var parts [][]string
 	for i := 0; i < len(data); i += partSize {
@@ -97,20 +97,20 @@ func (b *MatrixDataBuilder) parseRow(row []string, partSize int) (string, [][]st
 		}
 		parts = append(parts, data[i:end])
 	}
-	
+
 	return header, parts, nil
 }
 
 type rowResult struct {
-	index      int
-	header     string
-	data       [][]string
-	err        error
+	index  int
+	header string
+	data   [][]string
+	err    error
 }
 
 func (b *MatrixDataBuilder) BuildParallel(rawData [][]string, headerParts []string) *MatrixData {
 	result := &MatrixData{}
-	
+
 	// parse first row
 	headerRow, err := b.parseFirstRow(rawData[0], len(headerParts))
 	if err != nil {
@@ -163,7 +163,7 @@ func (b *MatrixDataBuilder) BuildParallel(rawData [][]string, headerParts []stri
 	if batchSize < 1 {
 		batchSize = 1
 	}
-	
+
 	for w := 0; w < numWorkers; w++ {
 		wg.Add(1)
 		go func() {
@@ -176,7 +176,7 @@ func (b *MatrixDataBuilder) BuildParallel(rawData [][]string, headerParts []stri
 						errors <- err
 						return
 					}
-					
+
 					result.rowHeaders[idx] = headerCol
 					result.values[idx] = rowWithParts
 				}

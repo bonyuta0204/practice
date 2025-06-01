@@ -8,11 +8,11 @@ import (
 
 func TestMatrixDataBuilder_Build(t *testing.T) {
 	tests := []struct {
-		name         string
-		rawData      [][]string
-		headerParts  []string
-		expected     *MatrixData
-		expectNil    bool
+		name        string
+		rawData     [][]string
+		headerParts []string
+		expected    *MatrixData
+		expectNil   bool
 	}{
 		{
 			name: "valid data with 2 header parts",
@@ -24,9 +24,9 @@ func TestMatrixDataBuilder_Build(t *testing.T) {
 			},
 			headerParts: []string{"Part1", "Part2"},
 			expected: &MatrixData{
-				columnHeaders:  []string{"Header1", "Header2"},
+				columnHeaders:    []string{"Header1", "Header2"},
 				columnSubHeaders: []string{"Part1", "Part2"},
-				rowHeaders:  []string{"Row1", "Row2"},
+				rowHeaders:       []string{"Row1", "Row2"},
 				values: [][][]string{
 					{{"1", "2"}, {"3", "4"}},
 					{{"5", "6"}, {"7", "8"}},
@@ -42,9 +42,9 @@ func TestMatrixDataBuilder_Build(t *testing.T) {
 			},
 			headerParts: []string{"P1", "P2", "P3"},
 			expected: &MatrixData{
-				columnHeaders:  []string{"H1", "H2"},
+				columnHeaders:    []string{"H1", "H2"},
 				columnSubHeaders: []string{"P1", "P2", "P3"},
-				rowHeaders:  []string{"R1"},
+				rowHeaders:       []string{"R1"},
 				values: [][][]string{
 					{{"a", "b", "c"}, {"d", "e", "f"}},
 				},
@@ -217,11 +217,11 @@ func TestMatrixDataBuilder_validateSecondRow(t *testing.T) {
 
 func TestMatrixDataBuilder_BuildParallel(t *testing.T) {
 	tests := []struct {
-		name         string
-		rawData      [][]string
-		headerParts  []string
-		expected     *MatrixData
-		expectNil    bool
+		name        string
+		rawData     [][]string
+		headerParts []string
+		expected    *MatrixData
+		expectNil   bool
 	}{
 		{
 			name: "valid data with 2 header parts",
